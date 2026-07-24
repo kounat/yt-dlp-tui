@@ -1,13 +1,16 @@
 [project]
 name = "yt-dlp-tui"
 version = "0.1.0"
-description = "Add your description here"
+description = "A terminal UI for yt-dlp."
 readme = "README.md"
 authors = [
     { name = "Kounat", email = "21286794+kounat@users.noreply.github.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "textual>=8.2.8",
+    "yt-dlp>=2026.7.4",
+]
 
 [project.scripts]
 yt-dlp-tui = "yt_dlp_tui:main"
