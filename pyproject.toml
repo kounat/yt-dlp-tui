@@ -1,0 +1,17 @@
+[project]
+name = "yt-dlp-tui"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Kounat", email = "21286794+kounat@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+yt-dlp-tui = "yt_dlp_tui:main"
+
+[build-system]
+requires = ["uv_build>=0.11.30,<0.12.0"]
+build-backend = "uv_build"
