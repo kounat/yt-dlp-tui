@@ -1,0 +1,25 @@
+#input-box {
+    # Prevent Horizontal container from filling entire vertical space - just wrap the content.
+    height: auto;
+
+    border-top: solid $primary;
+    border-bottom: solid $primary;
+    padding: 0 1;
+}
+
+#input-box Static {
+    # Prevent Static from filling entire horizontal width as well.
+    width: auto;
+
+    padding-right: 1;
+}
+
+#input-box Input {
+    # Disable default styling from Input.
+    border: none;
+    padding: 0;
+    # Width 1fr = fill remaining horizontal space. Height 1 to keep the input at one row (untested).
+    width: 1fr;
+    height: 1;
+}
+
