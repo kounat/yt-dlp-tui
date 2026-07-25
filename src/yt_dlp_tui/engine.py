@@ -1,6 +1,7 @@
 """Wrapper for yt-dlp - doesn't know about the UI."""
 
 from dataclasses import dataclass
+from typing import Any
 
 from yt_dlp import YoutubeDL
 
@@ -11,11 +12,13 @@ from yt_dlp import YoutubeDL
 class VideoInfo:
     url: str
     title: str
+    formats: list[dict[str, Any]]
 
-def list_formats(url: str) -> VideoInfo:
+def fetch_info(url: str) -> VideoInfo:
     with YoutubeDL() as ydl:
         info = ydl.extract_info(url, download=False)
     return VideoInfo(
         url=url,
         title=info.get("title", url),
+        formats=info.get("formats", [])
     )
