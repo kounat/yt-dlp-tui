@@ -6,6 +6,8 @@ from textual.containers import Horizontal
 from textual.theme import Theme
 from textual.widgets import Input, Static
 
+from yt_dlp_tui.engine import list_formats
+
 INPUT_ARROW = "❯"
 
 DEFAULT_THEME = Theme(
@@ -33,4 +35,6 @@ class TUIApp(App):
         self.theme = "default"
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
-        self.notify(f"Got URL: {event.value}")
+        url = event.value.strip()
+        formats = list_formats(url)
+        self.notify(f"Got Title: {formats.title}")
