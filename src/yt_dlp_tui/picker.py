@@ -4,11 +4,23 @@ from typing import Any
 
 from textual.widgets import OptionList
 from textual.widgets.option_list import Option
+from yt_dlp.utils import format_bytes
 
 _GUTTER = "  "
 _HEADER_ID = "__header__"
 MARKER_ARROW = "›"
 MARKER_DOT = "·"
+
+def _format_bitrate(fmt: dict[str, Any]) -> str:
+    tbr = fmt.get("tbr")
+    return f"{tbr:.0f}k" if tbr else "?"
+
+def _format_size(fmt: dict[str, Any]) -> str:
+    if size := fmt.get("filesize"):
+        return format_bytes(size)
+    if approx := fmt.get("filesize_approx"):
+        return f"~{format_bytes(approx)}"
+    return "?"
 
 class FormatPicker(OptionList):
     DEFAULT_CSS = """
@@ -43,14 +55,29 @@ class FormatPicker(OptionList):
         self.watch(self, "_mouse_hovering_over", self._redraw_markers, init=False)
 
     def set_formats(self, formats: list[dict[str, Any]]):
-        self.clear_options()
-        self.add_option(Option(f"{_GUTTER}ID", id=_HEADER_ID, disabled=True))
+        # Calculate column widths to get table alignment.
+        # One-liner looks messy, but it's basically making one big array of values and doing a max().
+        # We can skip calculating size since it's always the last column.
+        id_w = max([len("ID")] + [len(f.get("ext")) for f in formats])
+        ext_w = max([len("EXT")] + [len(f.get("ext")) for f in formats])
+        quality_w = max([len("QUALITY")] + [len(f.get("resolution")) for f in formats])
+        bitrate_w = max([len("BITRATE")] + [len(_format_bitrate(f)) for f in formats])
 
+        # Helper function to quickly create an aligned row based on the values above.
+        # < is: left-align & pad with spaces on the right
+        def row(id: str, ext: str, quality: str, bitrate: str, size: str) -> str:
+            return f"{id:<{id_w}} {ext:<{ext_w}}  {quality:<{quality_w}}  {bitrate:<{bitrate_w}}  {size}"
+
+        self.clear_options()
         self._labels = {}
+
+        # Add header "row" as a disabled option
+        self.add_option(Option(f"{_GUTTER}{row("ID", "EXT", "QUALITY", "BITRATE", "SIZE")}", id=_HEADER_ID, disabled=True))
         for fmt in formats:
             format_id = fmt.get("format_id")
-            self._labels[format_id] = format_id
-            self.add_option(Option(format_id, id=format_id))
+            label = row(format_id, fmt.get("ext", ""), fmt.get("resolution", ""), _format_bitrate(fmt), _format_size(fmt))
+            self._labels[format_id] = label
+            self.add_option(Option(label, id=format_id))
         if formats:
             self.highlighted = 1
 
