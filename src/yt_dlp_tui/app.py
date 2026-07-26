@@ -30,7 +30,7 @@ class TUIApp(App):
     def compose(self) -> ComposeResult:
         with Horizontal(id="input-box"):
             yield Static(INPUT_ARROW)
-            yield Input(placeholder="Paste a YouTube URL and hit Enter! (Ctrl+Q to quit.)")
+            yield URLInput(placeholder="Paste a YouTube URL and hit Enter! (Ctrl+C to clear, Ctrl+Q to quit.)")
         yield FormatPicker()
 
     def on_mount(self) -> None:
@@ -52,3 +52,11 @@ class TUIApp(App):
         picker = self.query_one(FormatPicker)
         picker.set_formats(formats)
         picker.focus()
+
+class URLInput(Input):
+    """Tiny replacement to the Input widget to allow Ctrl+C to wipe the text out when focused."""
+    def action_copy(self) -> None:
+        if self.selected_text:
+            self.app.copy_to_clipboard(self.selected_text)
+        else:
+            self.value = ""
