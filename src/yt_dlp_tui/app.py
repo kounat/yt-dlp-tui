@@ -1,4 +1,4 @@
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from textual import work
 from textual.app import App, ComposeResult
@@ -6,8 +6,9 @@ from textual.binding import BindingType
 from textual.containers import Horizontal
 from textual.theme import Theme
 from textual.widgets import Input, Static
+from yt_dlp.utils import YoutubeDLError, remove_terminal_sequences
 
-from yt_dlp_tui.engine import fetch_info
+from yt_dlp_tui.engine import VideoInfo, fetch_info
 from yt_dlp_tui.picker import FormatPicker
 
 INPUT_ARROW = "❯"
@@ -15,6 +16,7 @@ INPUT_ARROW = "❯"
 DEFAULT_THEME = Theme(
     name = "default",
     primary="#8A7CDC",
+    error="ansi_red",
     dark=True,
 )
 
@@ -31,6 +33,7 @@ class TUIApp(App):
         with Horizontal(id="input-box"):
             yield Static(INPUT_ARROW)
             yield URLInput(placeholder="Paste a YouTube URL and hit Enter! (Ctrl+C to clear, Ctrl+Q to quit.)")
+        yield Static("", id="status")
         yield FormatPicker()
 
     def on_mount(self) -> None:
@@ -44,13 +47,26 @@ class TUIApp(App):
     # Not sure it matters in this case since nothing else is happening, but it's good practice.
     @work(thread=True)
     def fetch_formats(self, url: str):
-        info = fetch_info(url)
+        try:
+            info = fetch_info(url)
+        except YoutubeDLError as error:
+            self.call_from_thread(self.show_error, str(error))
+            return
         # call_from_thread - safely reach out to main renderer thread to update UI.
-        self.call_from_thread(self.show_formats, info.formats)
+        self.call_from_thread(self.show_formats, info)
 
-    def show_formats(self, formats: list[dict[str, Any]]):
+    def show_error(self, message: str) -> None:
+        status = self.query_one("#status", Static)
+        status.update(remove_terminal_sequences(message))
+        status.set_classes("error")
+
+    def show_formats(self, info: VideoInfo):
+        status = self.query_one("#status", Static)
+        status.update(f"{info.title} - Select a format")
+        status.set_classes("active")
+
         picker = self.query_one(FormatPicker)
-        picker.set_formats(formats)
+        picker.set_formats(info.formats)
         picker.focus()
 
 class URLInput(Input):

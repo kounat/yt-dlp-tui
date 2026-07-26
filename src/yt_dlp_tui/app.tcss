@@ -1,3 +1,7 @@
+Screen {
+    padding: 1 2;
+}
+
 #input-box {
     # Prevent Horizontal container from filling entire vertical space - just wrap the content.
     height: auto;
@@ -21,5 +25,20 @@
     # Width 1fr = fill remaining horizontal space. Height 1 to keep the input at one row (untested).
     width: 1fr;
     height: 1;
+}
+
+#status {
+    padding-top: 1;
+    padding-bottom: 1;
+    # Matches the 2px gutter / padding on FormatPicker's table.
+    padding-left: 2;
+}
+
+#status.active {
+    color: $accent;
+}
+
+#status.error {
+    color: $error;
 }
 
