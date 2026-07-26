@@ -49,4 +49,6 @@ class TUIApp(App):
         self.call_from_thread(self.show_formats, info.formats)
 
     def show_formats(self, formats: list[dict[str, Any]]):
-        self.query_one(FormatPicker).set_formats(formats)
+        picker = self.query_one(FormatPicker)
+        picker.set_formats(formats)
+        picker.focus()
