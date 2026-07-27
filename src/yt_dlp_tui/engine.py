@@ -14,6 +14,22 @@ class VideoInfo:
     title: str
     formats: list[dict[str, Any]]
 
+def _format_kind(fmt: dict[str, Any]) -> str:
+    return "audio" if fmt.get("vcodec") in (None, "none") else "video"
+
+def _quality_key(fmt: dict[str, Any]) -> tuple[int, float]:
+    return (fmt.get("height") or 0, fmt.get("tbr") or 0)
+
+def filter_formats(formats: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Group formats by extension, keeping the highest quality format in the list."""
+    best: dict[str, dict[str, Any]] = {}
+    for fmt in formats:
+        key = (fmt.get("ext"), _format_kind(fmt))
+        # Python does a lexicographical comparison, so it checks the first element, then the second (if the first is equal), etc.
+        if key not in best or _quality_key(fmt) > _quality_key(best[key]):
+            best[key] = fmt
+    return list(best.values())
+
 def fetch_info(url: str) -> VideoInfo:
     with YoutubeDL() as ydl:
         info = ydl.extract_info(url, download=False)

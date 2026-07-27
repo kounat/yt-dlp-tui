@@ -8,7 +8,7 @@ from textual.theme import Theme
 from textual.widgets import Input, Static
 from yt_dlp.utils import YoutubeDLError, remove_terminal_sequences
 
-from yt_dlp_tui.engine import VideoInfo, download_url, fetch_info
+from yt_dlp_tui.engine import VideoInfo, download_url, fetch_info, filter_formats
 from yt_dlp_tui.picker import FormatPicker
 
 INPUT_ARROW = "❯"
@@ -72,7 +72,7 @@ class TUIApp(App):
         status.set_classes("active")
 
         picker = self.query_one(FormatPicker)
-        picker.set_formats(info.formats)
+        picker.set_formats(filter_formats(info.formats))
         picker.focus()
 
     # Automatically hooked up to the FormatPicker message using this syntax (metaprogramming magic!):
