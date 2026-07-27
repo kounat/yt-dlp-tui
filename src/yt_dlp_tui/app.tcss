@@ -42,3 +42,7 @@ Screen {
     color: $error;
 }
 
+#status.success {
+    color: $success;
+}
+

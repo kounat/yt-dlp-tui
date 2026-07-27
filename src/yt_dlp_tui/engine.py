@@ -22,3 +22,10 @@ def fetch_info(url: str) -> VideoInfo:
         title=info.get("title", url),
         formats=info.get("formats", [])
     )
+
+def download_url(url: str, format_id: str) -> None:
+    with YoutubeDL({
+        "format": format_id,
+        "outtmpl": "%(title)s.%(ext)s",
+    }) as ydl:
+        ydl.download([url])
