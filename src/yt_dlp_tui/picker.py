@@ -2,6 +2,7 @@
 
 from typing import Any
 
+from textual.message import Message
 from textual.widgets import OptionList
 from textual.widgets.option_list import Option
 from yt_dlp.utils import format_bytes
@@ -45,6 +46,12 @@ class FormatPicker(OptionList):
         }
     """
 
+    class FormatChosen(Message):
+        """Message that FormatPicker bubbles up to the app on selection - it's just the format_id."""
+        def __init__(self, format_id: str) -> None:
+            self.format_id = format_id
+            super().__init__()
+
     def __init__(self, **kwargs) -> None:
         # compact=True removes the border around the input - we don't have to fight the native border CSS
         super().__init__(compact=True, **kwargs)
@@ -83,6 +90,10 @@ class FormatPicker(OptionList):
 
     def on_option_list_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
         self._redraw_markers()
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        event.stop()  # Kills the built-in OptionSelected message and prevents that from bubbling up.
+        self.post_message(self.FormatChosen(event.option_id))
 
     def _redraw_markers(self) -> None:
         hovered = self._mouse_hovering_over
