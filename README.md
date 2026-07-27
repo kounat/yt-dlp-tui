@@ -12,6 +12,6 @@ This creates a symlink `~/.local/bin/yt-dlp-tui` to a dedicated virtual environm
 
 ## Backlog
 
-- [] Configuration for destination directory
-- [] Better menu for general configuration (e.g., disabling format filter)
-- [] Progress indication during download
+- [ ] Configuration for destination directory
+- [ ] Better menu for general configuration (e.g., disabling format filter)
+- [ ] Progress indication during download
