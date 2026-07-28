@@ -56,6 +56,7 @@ class FormatPicker(OptionList):
         # compact=True removes the border around the input - we don't have to fight the native border CSS
         super().__init__(compact=True, **kwargs)
         self._labels: dict[str, str] = {}
+        self.display = False  # Nothing to pick until set_formats() is called
 
     # Redraw the option list markers when hovering (i.e., register the mouse event)
     def on_mount(self) -> None:
@@ -65,9 +66,9 @@ class FormatPicker(OptionList):
         # Calculate column widths to get table alignment.
         # One-liner looks messy, but it's basically making one big array of values and doing a max().
         # We can skip calculating size since it's always the last column.
-        id_w = max([len("ID")] + [len(f.get("ext")) for f in formats])
-        ext_w = max([len("EXT")] + [len(f.get("ext")) for f in formats])
-        quality_w = max([len("QUALITY")] + [len(f.get("resolution")) for f in formats])
+        id_w = max([len("ID")] + [len(f.get("format_id", "")) for f in formats])
+        ext_w = max([len("EXT")] + [len(f.get("ext", "")) for f in formats])
+        quality_w = max([len("QUALITY")] + [len(f.get("resolution", "")) for f in formats])
         bitrate_w = max([len("BITRATE")] + [len(_format_bitrate(f)) for f in formats])
 
         # Helper function to quickly create an aligned row based on the values above.
@@ -87,6 +88,13 @@ class FormatPicker(OptionList):
             self.add_option(Option(label, id=format_id))
         if formats:
             self.highlighted = 1
+        self.display = True
+
+    def hide(self) -> None:
+        """Empty the list and take it off screen - the picker owns its own visibility."""
+        self.clear_options()
+        self._labels = {}
+        self.display = False
 
     def on_option_list_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
         self._redraw_markers()

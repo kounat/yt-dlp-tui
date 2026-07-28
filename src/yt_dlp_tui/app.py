@@ -78,7 +78,7 @@ class TUIApp(App):
     # Automatically hooked up to the FormatPicker message using this syntax (metaprogramming magic!):
     # on_<containing_class_name>_<message_class_name>
     def on_format_picker_format_chosen(self, event: FormatPicker.FormatChosen) -> None:
-        self.query_one(FormatPicker).display = False
+        self.query_one(FormatPicker).hide()
         status = self.query_one("#status", Static)
         status.update(f"Downloading {self._video_info.title} in format {event.format_id}...")
         self.run_download(self._video_info, event.format_id)
@@ -99,16 +99,14 @@ class TUIApp(App):
         self.reset()
 
     def reset(self) -> None:
-        picker = self.query_one(FormatPicker)
-        picker.display = False
-        picker.clear_options()
+        self.query_one(FormatPicker).hide()
 
         input = self.query_one(URLInput)
         input.value = ""
         input.disabled = False
         input.focus()
 
-        self._info = None
+        self._video_info = None
 
 class URLInput(Input):
     """Tiny replacement to the Input widget to allow Ctrl+C to wipe the text out when focused."""
