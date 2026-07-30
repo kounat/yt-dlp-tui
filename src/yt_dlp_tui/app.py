@@ -15,7 +15,7 @@ INPUT_ARROW = "❯"
 
 DEFAULT_THEME = Theme(
     name = "default",
-    primary="#8A7CDC",
+    primary="#AC5EFF",
     error="ansi_red",
     success="ansi_green",
     dark=True,
