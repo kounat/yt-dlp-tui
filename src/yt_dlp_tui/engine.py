@@ -1,10 +1,12 @@
 """Wrapper for yt-dlp - doesn't know about the UI."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from yt_dlp import YoutubeDL
 
+DOWNLOAD_DIR = Path.cwd();
 
 # frozen - class is immutable
 # slots - catches typos and saves memory by using a fixed-size array for attributes
@@ -42,6 +44,7 @@ def fetch_info(url: str) -> VideoInfo:
 def download_url(url: str, format_id: str) -> None:
     with YoutubeDL({
         "format": format_id,
-        "outtmpl": "%(title)s.%(ext)s",
+        # pathlib overrides __truediv__ to allow this funky string concatenation!
+        "outtmpl": str(DOWNLOAD_DIR / "%(title)s.%(ext)s"),
     }) as ydl:
         ydl.download([url])

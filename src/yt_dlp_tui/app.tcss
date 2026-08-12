@@ -2,6 +2,11 @@ Screen {
     padding: 1 2;
 }
 
+#dest {
+    color: $text-muted;
+    padding-left: 1;
+}
+
 #input-box {
     # Prevent Horizontal container from filling entire vertical space - just wrap the content.
     height: auto;

@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import ClassVar
 
 from textual import work
@@ -8,7 +9,13 @@ from textual.theme import Theme
 from textual.widgets import Input, Static
 from yt_dlp.utils import YoutubeDLError, remove_terminal_sequences
 
-from yt_dlp_tui.engine import VideoInfo, download_url, fetch_info, filter_formats
+from yt_dlp_tui.engine import (
+    DOWNLOAD_DIR,
+    VideoInfo,
+    download_url,
+    fetch_info,
+    filter_formats,
+)
 from yt_dlp_tui.picker import FormatPicker
 
 INPUT_ARROW = "❯"
@@ -21,6 +28,14 @@ DEFAULT_THEME = Theme(
     dark=True,
 )
 
+def _display_path(path: Path) -> str:
+    home = Path.home()
+    if path == home:
+        return "~"
+    if path.is_relative_to(home):
+        return f"~/{path.relative_to(home)}"
+    return str(path)
+
 class TUIApp(App):
     BINDINGS: ClassVar[list[BindingType]] = [
         ("ctrl+c", "nothing")  # Suppress built-in Textual pop-up from Ctrl+C
@@ -32,6 +47,7 @@ class TUIApp(App):
         self._video_info: VideoInfo | None = None
 
     def compose(self) -> ComposeResult:
+        yield Static(f"Saving to: {_display_path(DOWNLOAD_DIR)}", id="dest")
         with Horizontal(id="input-box"):
             yield Static(INPUT_ARROW)
             yield URLInput(placeholder="Paste a YouTube URL and hit Enter! (Ctrl+C to clear, Ctrl+Q to quit.)")
