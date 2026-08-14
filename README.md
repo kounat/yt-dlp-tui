@@ -1,6 +1,8 @@
 # yt-dlp-tui
 
-Convenient wrapper around `yt-dlp`. Tested with Ghostty on MacOS Tahoe 26.x.
+Terminal UI for `yt-dlp`, built with Textual. Tested with Ghostty on MacOS Tahoe 26.x.
+
+Built as a foray into Terminal interfaces & for self-convenience to download YouTube videos.
 
 ## Installation (?)
 
