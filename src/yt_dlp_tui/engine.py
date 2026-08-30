@@ -19,6 +19,14 @@ class VideoInfo:
 def _format_kind(fmt: dict[str, Any]) -> str:
     return "audio" if fmt.get("vcodec") in (None, "none") else "video"
 
+def _is_media(fmt: dict[str, Any]) -> bool:
+    """Storyboards declare no streams at all - they'd otherwise be mistaken for audio.
+
+    yt-dlp spells an absent stream "none" and an unknown one None, so only the
+    string counts as absent - HLS audio leaves acodec unknown but is still real.
+    """
+    return not (fmt.get("vcodec") == "none" and fmt.get("acodec") == "none")
+
 def _quality_key(fmt: dict[str, Any]) -> tuple[int, float]:
     return (fmt.get("height") or 0, fmt.get("tbr") or 0)
 
@@ -26,6 +34,8 @@ def filter_formats(formats: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Group formats by extension, keeping the highest quality format in the list."""
     best: dict[str, dict[str, Any]] = {}
     for fmt in formats:
+        if not _is_media(fmt):
+            continue
         key = (fmt.get("ext"), _format_kind(fmt))
         # Python does a lexicographical comparison, so it checks the first element, then the second (if the first is equal), etc.
         if key not in best or _quality_key(fmt) > _quality_key(best[key]):
@@ -46,5 +56,7 @@ def download_url(url: str, format_id: str) -> None:
         "format": format_id,
         # pathlib overrides __truediv__ to allow this funky string concatenation!
         "outtmpl": str(DOWNLOAD_DIR / "%(title)s.%(ext)s"),
+        # Same title + ext across formats would otherwise be skipped as already downloaded
+        "overwrites": True,
     }) as ydl:
         ydl.download([url])

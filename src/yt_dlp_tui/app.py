@@ -78,7 +78,7 @@ class TUIApp(App):
         status = self.query_one("#status", Static)
         status.update(remove_terminal_sequences(message))
         status.set_classes("error")
-        self.query_one(URLInput).disabled = False
+        self.reset(clear=False)  # Keep the URL around so it can be fixed, not retyped
 
     def show_formats(self, info: VideoInfo) -> None:
         self._video_info = info
@@ -114,11 +114,12 @@ class TUIApp(App):
         status.set_classes("success")
         self.reset()
 
-    def reset(self) -> None:
+    def reset(self, *, clear: bool = True) -> None:
         self.query_one(FormatPicker).hide()
 
         input = self.query_one(URLInput)
-        input.value = ""
+        if clear:
+            input.value = ""
         input.disabled = False
         input.focus()
 
