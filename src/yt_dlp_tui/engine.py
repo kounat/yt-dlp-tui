@@ -7,6 +7,7 @@ from typing import Any
 from yt_dlp import YoutubeDL
 
 DOWNLOAD_DIR = Path.cwd();
+SOCKET_TIMEOUT = 10
 
 # frozen - class is immutable
 # slots - catches typos and saves memory by using a fixed-size array for attributes
@@ -43,7 +44,7 @@ def filter_formats(formats: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return list(best.values())
 
 def fetch_info(url: str) -> VideoInfo:
-    with YoutubeDL() as ydl:
+    with YoutubeDL({"socket_timeout": SOCKET_TIMEOUT}) as ydl:
         info = ydl.extract_info(url, download=False)
     return VideoInfo(
         url=url,

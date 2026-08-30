@@ -24,7 +24,7 @@ uv run yt-dlp-tui
 ## Backlog
 
 - [x] Show destination directory
-- [ ] "Loading" screen with timeout
+- [x] "Loading" screen with timeout
 - [ ] Configuration for destination directory
 - [ ] Better menu for general configuration (e.g., disabling format filter)
 - [ ] Progress indication during download
