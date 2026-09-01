@@ -13,9 +13,11 @@ from yt_dlp.utils import YoutubeDLError, remove_terminal_sequences
 from yt_dlp_tui.engine import (
     DOWNLOAD_DIR,
     VideoInfo,
+    download_thumbnail,
     download_url,
     fetch_info,
     filter_formats,
+    thumbnail_format,
 )
 from yt_dlp_tui.picker import FormatPicker
 
@@ -129,8 +131,11 @@ class TUIApp(App):
         status.update(f"{info.title} - Select a format")
         status.set_classes("active")
 
+        formats = filter_formats(info.formats)
+        formats += [thumbnail_format(thumb) for thumb in info.thumbnails]
+
         picker = self.query_one(FormatPicker)
-        picker.set_formats(filter_formats(info.formats))
+        picker.set_formats(formats)
         picker.focus()
 
     # Automatically hooked up to the FormatPicker message using this syntax (metaprogramming magic!):
@@ -138,13 +143,24 @@ class TUIApp(App):
     def on_format_picker_format_chosen(self, event: FormatPicker.FormatChosen) -> None:
         self.query_one(FormatPicker).hide()
         status = self.query_one("#status", Static)
-        status.update(f"Downloading {self._video_info.title} in format {event.format_id}...")
+        thumb = self._thumbnail_for(event.format_id)
+        if thumb is not None:
+            status.update(f"Downloading {thumb['ext']} thumbnail for {self._video_info.title}...")
+        else:
+            status.update(f"Downloading {self._video_info.title} in format {event.format_id}...")
         _run_daemon(self.run_download, self._video_info, event.format_id)
 
+    def _thumbnail_for(self, format_id: str) -> dict | None:
+        return next((t for t in self._video_info.thumbnails if t["ext"] == format_id), None)
+
     def run_download(self, info: VideoInfo, format_id: str) -> None:
+        thumb = next((t for t in info.thumbnails if t["ext"] == format_id), None)
         try:
-            download_url(info.url, format_id)
-        except YoutubeDLError as error:
+            if thumb is not None:
+                download_thumbnail(thumb["url"], info.title)
+            else:
+                download_url(info.url, format_id)
+        except (YoutubeDLError, OSError) as error:
             self.call_from_thread(self.show_error, str(error))
             return
         self.call_from_thread(self.show_download_complete, info.title)
