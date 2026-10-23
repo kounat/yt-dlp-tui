@@ -81,7 +81,17 @@ class TUIApp(App):
         self.register_theme(DEFAULT_THEME)
         self.theme = "default"
 
+    def on_input_changed(self, event: Input.Changed) -> None:
+        status = self.query_one("#status", Static)
+        if status.has_class("url-error"):
+            status.update("")
+            status.set_classes("")
+
     def on_input_submitted(self, event: Input.Submitted) -> None:
+        url = event.value.strip()
+        if not url:
+            return
+
         event.input.disabled = True
 
         status = self.query_one("#status", Static)
@@ -89,7 +99,7 @@ class TUIApp(App):
         status.set_classes("active")
 
         self._fetch_token += 1
-        _run_daemon(self.fetch_formats, event.value.strip(), self._fetch_token)
+        _run_daemon(self.fetch_formats, url, self._fetch_token)
         self._fetch_timeout = self.set_timer(FETCH_TIMEOUT, self.show_timeout)
 
     # Runs off the renderer thread so a slow yt-dlp call can't freeze the UI.
@@ -116,11 +126,11 @@ class TUIApp(App):
         self._fetch_token += 1
         self.show_error(f"Timed out after {FETCH_TIMEOUT:.0f}s - is the URL correct?")
 
-    def show_error(self, message: str) -> None:
+    def show_error(self, message: str, *, url_error: bool = True) -> None:
         self._cancel_fetch_timeout()
         status = self.query_one("#status", Static)
         status.update(remove_terminal_sequences(message))
-        status.set_classes("error")
+        status.set_classes("error url-error" if url_error else "error")
         self.reset(clear=False)  # Keep the URL around so it can be fixed, not retyped
 
     def show_formats(self, info: VideoInfo) -> None:
@@ -161,7 +171,7 @@ class TUIApp(App):
             else:
                 download_url(info.url, format_id)
         except (YoutubeDLError, OSError) as error:
-            self.call_from_thread(self.show_error, str(error))
+            self.call_from_thread(self.show_error, str(error), url_error=False)
             return
         self.call_from_thread(self.show_download_complete, info.title)
 
